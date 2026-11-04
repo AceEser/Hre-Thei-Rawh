@@ -1,0 +1,161 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidRoom(data) {
+      return data.roomId is string && isValidId(data.roomId) &&
+             data.roomCode is string && data.roomCode.size() >= 4 && data.roomCode.size() <= 12 &&
+             data.hostId is string && isValidId(data.hostId) &&
+             data.status in ['LOBBY', 'SELECTING_WORD', 'DRAWING', 'ROUND_END', 'GAME_OVER'] &&
+             data.matchDurationMinutes is int && data.matchDurationMinutes >= 1 && data.matchDurationMinutes <= 120 &&
+             data.currentRound is int && data.currentRound >= 0 &&
+             data.totalRounds is int && data.totalRounds >= 1 &&
+             (!('currentDrawerId' in data) || data.currentDrawerId is string) &&
+             (!('currentDrawerNickname' in data) || data.currentDrawerNickname is string) &&
+             (!('currentWordLength' in data) || data.currentWordLength is int) &&
+             (!('revealedHint' in data) || data.revealedHint is string) &&
+             (!('secretWord' in data) || data.secretWord is string) &&
+             (!('roundTimeRemaining' in data) || data.roundTimeRemaining is int) &&
+             (!('roundDurationSeconds' in data) || data.roundDurationSeconds is int) &&
+             (!('roundStartTime' in data) || data.roundStartTime == null || data.roundStartTime is timestamp) &&
+             (!('roundEndTime' in data) || data.roundEndTime == null || data.roundEndTime is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidPlayer(data) {
+      return data.userId is string && isValidId(data.userId) &&
+             data.nickname is string && data.nickname.size() >= 1 && data.nickname.size() <= 40 &&
+             data.avatarColor is string && data.avatarColor.size() <= 16 &&
+             data.score is int && data.score >= 0 &&
+             data.isHost is bool &&
+             data.isSpectator is bool &&
+             data.hasGuessedThisRound is bool &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp);
+    }
+
+    function isValidStroke(data) {
+      return data.strokeId is string && isValidId(data.strokeId) &&
+             data.drawerId is string && isValidId(data.drawerId) &&
+             data.color is int &&
+             (data.brushWidth is int || data.brushWidth is float) &&
+             data.isEraser is bool &&
+             data.pointsJson is string && data.pointsJson.size() <= 200000;
+    }
+
+    function isValidMessage(data) {
+      return data.messageId is string && isValidId(data.messageId) &&
+             data.senderId is string && isValidId(data.senderId) &&
+             data.senderNickname is string && data.senderNickname.size() >= 1 && data.senderNickname.size() <= 40 &&
+             data.content is string && data.content.size() >= 1 && data.content.size() <= 500 &&
+             data.type in ['CHAT', 'CORRECT_GUESS', 'STICKER', 'SYSTEM'];
+    }
+
+    function isValidReaction(data) {
+      return data.reactionId is string && isValidId(data.reactionId) &&
+             data.senderNickname is string && data.senderNickname.size() >= 1 && data.senderNickname.size() <= 40 &&
+             data.emoji is string && data.emoji.size() >= 1 && data.emoji.size() <= 10;
+    }
+
+    match /rooms/{roomId} {
+      allow get, list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+                       isValidId(roomId) &&
+                       incoming().hostId == request.auth.uid &&
+                       incoming().createdAt is timestamp &&
+                       incoming().createdAt <= request.time &&
+                       isValidRoom(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(roomId) &&
+                       incoming().roomId == existing().roomId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidRoom(incoming());
+
+      allow delete: if isSignedIn() &&
+                       isValidId(roomId) &&
+                       existing().hostId == request.auth.uid;
+
+      match /players/{playerId} {
+        allow get, list: if isSignedIn();
+
+        allow create: if isSignedIn() &&
+                         isValidId(playerId) &&
+                         (request.auth.uid == playerId || request.auth.uid == incoming().userId) &&
+                         incoming().joinedAt is timestamp &&
+                         incoming().joinedAt <= request.time &&
+                         isValidPlayer(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(playerId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().joinedAt == existing().joinedAt &&
+                         isValidPlayer(incoming());
+
+        allow delete: if isSignedIn() &&
+                         isValidId(playerId) &&
+                         (request.auth.uid == playerId || request.auth.uid == get(/databases/$(database)/documents/rooms/$(roomId)).data.hostId);
+      }
+
+      match /strokes/{strokeId} {
+        allow get, list: if isSignedIn();
+
+        allow create: if isSignedIn() &&
+                         isValidId(strokeId) &&
+                         incoming().drawerId == request.auth.uid &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidStroke(incoming());
+
+        allow delete: if isSignedIn() && isValidId(strokeId);
+      }
+
+      match /messages/{messageId} {
+        allow get, list: if isSignedIn();
+
+        allow create: if isSignedIn() &&
+                         isValidId(messageId) &&
+                         incoming().senderId == request.auth.uid &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidMessage(incoming());
+
+        allow delete: if isSignedIn() && isValidId(messageId);
+      }
+
+      match /reactions/{reactionId} {
+        allow get, list: if isSignedIn();
+
+        allow create: if isSignedIn() &&
+                         isValidId(reactionId) &&
+                         incoming().createdAt is timestamp &&
+                         incoming().createdAt <= request.time &&
+                         isValidReaction(incoming());
+
+        allow delete: if isSignedIn() && isValidId(reactionId);
+      }
+    }
+  }
+}

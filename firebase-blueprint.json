@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "Room": {
+      "title": "Room",
+      "description": "A multiplayer game room instance.",
+      "type": "object",
+      "properties": {
+        "roomId": { "type": "string" },
+        "roomCode": { "type": "string" },
+        "hostId": { "type": "string" },
+        "status": { "type": "string", "enum": ["LOBBY", "SELECTING_WORD", "DRAWING", "ROUND_END", "GAME_OVER"] },
+        "matchDurationMinutes": { "type": "integer" },
+        "currentRound": { "type": "integer" },
+        "totalRounds": { "type": "integer" },
+        "currentDrawerId": { "type": "string" },
+        "currentDrawerNickname": { "type": "string" },
+        "currentWordLength": { "type": "integer" },
+        "revealedHint": { "type": "string" },
+        "secretWord": { "type": "string" },
+        "roundTimeRemaining": { "type": "integer" },
+        "roundDurationSeconds": { "type": "integer" },
+        "roundStartTime": { "type": "string", "format": "date-time" },
+        "roundEndTime": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["roomId", "roomCode", "hostId", "status", "matchDurationMinutes", "currentRound", "totalRounds", "createdAt"]
+    },
+    "Player": {
+      "title": "Player",
+      "description": "A player participant in a room.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "nickname": { "type": "string" },
+        "avatarColor": { "type": "string" },
+        "score": { "type": "integer" },
+        "isHost": { "type": "boolean" },
+        "isSpectator": { "type": "boolean" },
+        "hasGuessedThisRound": { "type": "boolean" },
+        "joinedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "nickname", "avatarColor", "score", "isHost", "isSpectator", "hasGuessedThisRound", "joinedAt"]
+    },
+    "Stroke": {
+      "title": "Stroke",
+      "description": "A drawing stroke path or canvas operation.",
+      "type": "object",
+      "properties": {
+        "strokeId": { "type": "string" },
+        "drawerId": { "type": "string" },
+        "color": { "type": "integer" },
+        "brushWidth": { "type": "number" },
+        "isEraser": { "type": "boolean" },
+        "pointsJson": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["strokeId", "drawerId", "color", "brushWidth", "isEraser", "pointsJson", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A chat guess, sticker announcement, or system message.",
+      "type": "object",
+      "properties": {
+        "messageId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderNickname": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["CHAT", "CORRECT_GUESS", "STICKER", "SYSTEM"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["messageId", "senderId", "senderNickname", "content", "type", "createdAt"]
+    },
+    "Reaction": {
+      "title": "Reaction",
+      "description": "An ephemeral floating reaction emoji.",
+      "type": "object",
+      "properties": {
+        "reactionId": { "type": "string" },
+        "senderNickname": { "type": "string" },
+        "emoji": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reactionId", "senderNickname", "emoji", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/rooms/{roomId}": {
+      "schema": { "$ref": "#/entities/Room" },
+      "description": "Active multiplayer game rooms."
+    },
+    "/rooms/{roomId}/players/{playerId}": {
+      "schema": { "$ref": "#/entities/Player" },
+      "description": "Players in the game room."
+    },
+    "/rooms/{roomId}/strokes/{strokeId}": {
+      "schema": { "$ref": "#/entities/Stroke" },
+      "description": "Synchronized drawing canvas strokes."
+    },
+    "/rooms/{roomId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/Message" },
+      "description": "Chat guesses, system events, and stickers."
+    },
+    "/rooms/{roomId}/reactions/{reactionId}": {
+      "schema": { "$ref": "#/entities/Reaction" },
+      "description": "Real-time floating emojis."
+    }
+  }
+}

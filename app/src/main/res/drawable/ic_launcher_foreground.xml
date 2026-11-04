@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Paint Splash / Arc -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M32,74 C36,78 48,82 62,78 C76,74 80,62 76,56 C74,52 68,54 64,57 C58,62 46,68 32,74 Z" />
+    <path
+        android:fillColor="#FFD600"
+        android:pathData="M78,36 C80,33 84,33 86,36 C88,38 88,42 86,44 C83,46 79,44 78,41 Z" />
+    <path
+        android:fillColor="#FF3366"
+        android:pathData="M28,42 C26,40 26,36 29,34 C32,32 36,34 37,37 C37,40 33,43 30,42 Z" />
+
+    <!-- Stylized Pencil / Brush Body (Diagonal) -->
+    <!-- Pencil main body -->
+    <path
+        android:fillColor="#FFD600"
+        android:pathData="M44,34 L66,56 L54,68 L32,46 Z" />
+    <!-- Pencil faceted shadow side -->
+    <path
+        android:fillColor="#FFA000"
+        android:pathData="M38,40 L60,62 L54,68 L32,46 Z" />
+    <!-- Pencil tip wood -->
+    <path
+        android:fillColor="#FFE082"
+        android:pathData="M32,46 L54,68 L48,74 L26,52 Z" />
+    <!-- Pencil graphite tip in coral pink paint -->
+    <path
+        android:fillColor="#FF3366"
+        android:pathData="M26,52 L48,74 L42,80 L20,58 Z" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M20,58 L24,62 L18,74 L14,70 Z" />
+
+    <!-- Eraser band and eraser top -->
+    <path
+        android:fillColor="#B0BEC5"
+        android:pathData="M66,56 L72,50 L50,28 L44,34 Z" />
+    <path
+        android:fillColor="#ECEFF1"
+        android:pathData="M68,54 L71,51 L52,32 L49,35 Z" />
+    <path
+        android:fillColor="#FF3366"
+        android:pathData="M72,50 L78,44 C82,40 76,34 72,38 L66,44 Z" />
+
+    <!-- Sparkles and stars -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,24 L74,28 L78,30 L74,32 L72,36 L70,32 L66,30 L70,28 Z" />
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M38,22 L39,25 L42,26 L39,27 L38,30 L37,27 L34,26 L37,25 Z" />
+    <path
+        android:fillColor="#FFD600"
+        android:pathData="M80,66 L81,68 L83,69 L81,70 L80,72 L79,70 L77,69 L79,68 Z" />
+</vector>
